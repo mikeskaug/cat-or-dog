@@ -1,5 +1,6 @@
 import time
 import os
+import argparse
 import tensorflow as tf
 from tensorflow.contrib import learn
 
@@ -48,7 +49,7 @@ def do_eval(sess,
           (num_examples, true_count, precision))
 
 
-def run_training(unused_argv):
+def run_training(model_checkpoint=None):
     data_sets = get_data_sets('data/train/')
 
     with tf.Graph().as_default():
@@ -80,6 +81,10 @@ def run_training(unused_argv):
 
         # Create a Tensor Flow "Session"
         sess = tf.Session()
+
+        # Restore a checkpoint file if provided on command line
+        if model_checkpoint:
+            saver.restore(sess, model_checkpoint)
 
         # Create a SummaryWriter to output summaries and the Graph.
         summary_writer = tf.summary.FileWriter(LOG_DIR, sess.graph)
@@ -139,4 +144,8 @@ def run_training(unused_argv):
 
 
 if __name__ == "__main__":
-    tf.app.run(main=run_training)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--checkpoint', help='Restore a tensorflow session from a checkpoint file to continue training')
+
+    args = parser.parse_args()
+    tf.app.run(main=run_training(args.checkpoint))
